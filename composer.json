@@ -1,0 +1,20 @@
+{
+    "name": "rimantoro/lumen-rule",
+    "description": "Rule engine for Lumen",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rosa Imantoro",
+            "email": "rosaimantoro@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "illuminate/database": "5.2.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rimantoro\\Lumenrule\\": "src/"
+        }
+    }
+}
