@@ -8,7 +8,6 @@ use Rimantoro\Lumenrule\Models\RulesModel;
 class Rule {
 
 	protected $id;
-	protected $event;
 	protected $code;
 	protected $title;
 	protected $rules;
@@ -20,18 +19,16 @@ class Rule {
 
 	protected function getDataAndParse()
 	{
-		$rule = RulesModel::where('event', $this->event)
-			->where('code', $this->code)
+		$rule = RulesModel::where('code', $this->code)
 			->where('active', 1)
 			->first();
 
-		if(!$rule) throw new Exception("Rule not found or inactive for event=".$this->event." and code=".$this->code, 422);
+		if(!$rule) throw new Exception("Rule not found or inactive for code=".$this->code, 422);
 
 		$this->ruleSet = $rule->rules;
 
 		// parse object attr
 		$this->id = $rule->id;
-		$this->event = $rule->event;
 		$this->code = $rule->code;
 		$this->title = $rule->title;
 		$this->active = $rule->active;
@@ -44,11 +41,10 @@ class Rule {
 	// PUBLIC
 	// ========================
 
-	public function __construct($event, $code, Array $actualParams)
+	public function __construct($code, Array $actualParams)
 	{
 		$this->now = date('Y-m-d H:i:s');
 		$this->actualParams = $actualParams;
-		$this->event = $event;
 		$this->code = $code;
 
 		$this->getDataAndParse();

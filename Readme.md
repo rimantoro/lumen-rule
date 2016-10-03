@@ -2,28 +2,25 @@
 
 Simple rule engine for Lumen framework. 
 
-  - Set your rule and save it to database, and compare it with the actual value in related "event"
-  - Custom "event" which you can put in your wanted places
-  - Support for custom callback action
+  - Set your rule and save it to database, and compare it with in your event
+  - Custom callback action
 
 ## Usage
 
-Let say you have rule with code "sku100_stock_limit" and for event "purchase". This rule have a TRUE value if :
+Let say you have rule with code "sku100_promo_oct". This rule have a TRUE value if :
 
 - product_id == 'SKU100' (AND)
-- purchase_qty <= 10
+- purchase_date <= '2016-10-30'
 
-What you need to do is to put this code in your desired event logic.
+What you need to do is to put this code in your desired event.
 
 ```php
-$Rule = new \Rimantoro\Lumenrule\Rule('purchase', 'sku100_promo_oct', $actualValue);
-$check = $Rule->validate(function($ruleSet) use ($Rule) {
-    $cek = $Rule->result($ruleSet);
-    if($cek)
-        echo "OK";
-    else
-        echo "NOT OK";
-});
+$actualValue = [
+    'product_id' => 'SKU100',
+    'purchase_date' => '2016-10-03'
+];
+$Rule = new \Rimantoro\Lumenrule\Rule('sku100_promo_oct', $actualValue);
+$check = $Rule->validate();
 
 // Return rule in string
 var_dump($Rule->parseRuleAsString());
@@ -39,12 +36,7 @@ Despite only to return TRUE or FALSE, you can set your own logic with action cal
 note : you need to setup anonymous function with $ruleSer as argument to pass in validate method. Also for Rule object itself need to pass through your callback.
 
 ```php
-$actualValue = [
-    'product_id' => 'SKU100',
-    'purchase_qty' => 5
-];
-
-$Rule = \Rimantoro\Lumenrule\Rule('purchase', 'sku100_stock_limit', $actualValue);
+$Rule = \Rimantoro\Lumenrule\Rule('sku100_promo_oct', $actualValue);
 $check = $Rule->validate(function($ruleSet) use ($Rule){
     // this will return your rule logic value compared to actual value
     $validate = $Rule->result($ruleSet);
@@ -62,7 +54,6 @@ $check = $Rule->validate(function($ruleSet) use ($Rule){
 $Obj = new \Rimantoro\Lumenrule\Models\RulesModel;
 $Obj->code = 'sku200_purchase_qty_limit';
 $Obj->title = 'Purchase Qty Limit For SKU200';
-$Obj->event = 'purchase';
 $Obj->rules = [
     [ 'product_id', '==', 'SKU200', 'string' ],
     [ 'purchase_qty', '<', '20', 'numeric' ],
@@ -74,7 +65,7 @@ $Obj->save();
 ## Update Existing Rule
 
 ```php
-$Rule = new \Rimantoro\Lumenrule\Rule('purchase', 'sku200_purchase_qty_limit', $actualValue);
+$Rule = new \Rimantoro\Lumenrule\Rule('sku100_promo_oct', $actualValue);
 $Obj = $Rule->getInfo();
 $Obj->rules = [
     [ 'product_id', '==', 'SKU200', 'string' ],
@@ -87,7 +78,7 @@ var_dump($Obj);
 ## Delete Existing Rule
 
 ```php
-$Rule = new \Rimantoro\Lumenrule\Rule('purchase', 'sku200_purchase_qty_limit', $actualValue);
+$Rule = new \Rimantoro\Lumenrule\Rule('sku100_promo_oct', $actualValue);
 $Obj = $Rule->getInfo();
 $del = $Obj->delete();
 var_dump($del);

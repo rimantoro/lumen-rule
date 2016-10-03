@@ -16,11 +16,7 @@ class RulesModel extends Model
 
     public $incrementing = false;
 
-    // protected $fillable = [ 'id', 'code', 'event', 'title', 'rules', 'active'];
     protected $guarded = [];
-
-    // if u'r using softdeletes
-    // protected $dates = ['deleted_at'];
 
     // for accessor ( custom field )
     protected $appends = [];
