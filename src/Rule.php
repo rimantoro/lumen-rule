@@ -131,7 +131,7 @@ class Rule {
 			$strLogic .=  sprintf("%s %s %s AND ", $rule[0], $rule[1], $rule[2]);
 		}
 
-		$strLogic = rtrim($strLogic, " AND ");
+		$strLogic = rtrim($strLogic, " AND ") . " || actual param values are " . json_encode($this->actualParams);
 
 		return $strLogic;
 	}
