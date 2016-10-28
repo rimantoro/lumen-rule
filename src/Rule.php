@@ -27,7 +27,7 @@ class Rule {
 			->where('active', 1)
 			->first();
 
-		if(!$rule) throw new Exception("Rule not found or inactive for code=".$this->code, 422);
+		if(!$rule) throw new Exception("Rule not found or inactive for code ".$this->code, 422);
 
 		$this->ruleSet = $rule->rules;
 
@@ -110,7 +110,7 @@ class Rule {
         	foreach ($patterns as $k => $v) {
         		$clean = trim($v, '{');
         		$clean = trim($clean, '}');
-        		if(array_search($clean, $replacements)===false):
+        		if(!isset($replacements[$clean])):
         			// cannot find valid replacement
         			throw new Exception("Cannot found valid rule replacement for index $clean", 500);
         		endif;

@@ -46,7 +46,7 @@ class RulesModel extends Model
      */
     public function setRulesAttribute($values)
     {
-        if(!is_array($values)) throw new Exception("Rules must be an array", 500);
+        if(!is_array($values)) throw new Exception("Rules must be an array. i.e: [[ 'param_name', 'operator', 'param_value', 'param_type' ], [...]]", 500);
         
         $raw = [];
 
