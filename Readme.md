@@ -3,6 +3,7 @@
 Simple rule engine for Lumen framework. 
 
   - Set your rule and save it to database, and compare it with in your event
+  - Logic grouping
   - Custom callback action
 
 ## Usage
@@ -44,7 +45,7 @@ $result2 = $Rule->validate();    // This also true
 
 ### Logic Grouping
 
-If you have many single rules componen and you want to grouping to achieve the correct validation, do this when you want to save your rule.
+If you have many single rules component and you need to grouping for more complex validation, do this when you want to save your rule.
 
 ```php
 ...
@@ -80,7 +81,7 @@ var_dump($Rule->getInfo());
 
 Despite only to return TRUE or FALSE, you can set your own logic with action callback in validate method.
 
-note : you need to setup anonymous function with $ruleSer as argument to pass in validate method. Also for Rule object itself need to pass through your callback.
+note : you need to setup anonymous function with $ruleSet as argument to pass in validate method. Also for Rule object itself need to pass through your callback.
 
 ```php
 $Rule = \Rimantoro\Lumenrule\Rule('sku100_promo_oct', $actualValue);
