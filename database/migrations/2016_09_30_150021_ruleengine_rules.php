@@ -18,6 +18,7 @@ class RuleengineRules extends Migration
                 $table->string('code');
                 $table->string('title');
                 $table->string('rules');
+                $table->text('group_logic')->nullable();
                 $table->integer('active');
 
                 $table->unique('code');

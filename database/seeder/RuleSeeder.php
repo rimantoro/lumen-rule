@@ -13,30 +13,54 @@ class RuleSeeder extends Seeder
     {
 
 
-        $purchaseLimitSKU100 = json_encode([
-            "product_id|==|SKU100|string",
-            "purchase_qty|<=|10|numeric",
-        ]);
+        $purchaseLimitSKU100 = [
+            ['product_id', '==', 'SKU100', 'string'],
+            ['purchase_qty', '<=', 10, 'numeric']
+        ];
+        $model = new \Rimantoro\Lumenrule\Models\RulesModel;
+        $model->code = 'sku100_stock_limit';
+        $model->title = 'SKU100 Stock Limit Purchase';
+        $model->rules = $purchaseLimitSKU100;
+        $model->group_logic = '{0} AND {1}';
+        $model->active = 1;
+        $model->save();
 
-        $priceDiscountSKU100 = json_encode([
-            "product_id|==|SKU100|string",
-            "purchase_amount|>=|100000|numeric",
-        ]);
 
-        $pulsaBack = json_encode([
-            "product_id|==|SKU100|string",
-        ]);
+        $priceDiscountSKU100 = [
+            ['product_id', '==', 'SKU100', 'string'],
+            ['purchase_amount', '>=', 100000, 'numeric'],
+        ];
+        $model = new \Rimantoro\Lumenrule\Models\RulesModel;
+        $model->code = 'sku100_disc_25';
+        $model->title = 'SKU100 25% Discount';
+        $model->rules = $priceDiscountSKU100;
+        $model->group_logic = '{0} AND {1}';
+        $model->active = 1;
+        $model->save();
 
-        $beforeDate = json_encode([
-            "product_id|==|SKU100|string",
-            "purchase_date|<=|2016-10-30|date",
-        ]);
+        $pulsaBack = [
+            ['product_id', '==', 'SKU100', 'string'],
+        ];
+        $model = new \Rimantoro\Lumenrule\Models\RulesModel;
+        $model->code = 'sku100_pulsaback_10';
+        $model->title = 'SKU100 Pulsaback 25rb';
+        $model->rules = $pulsaBack;
+        $model->group_logic = null;
+        $model->active = 1;
+        $model->save();
 
-        \Rimantoro\Lumenrule\Models\RulesModel::insert([
-                [ 'code' => 'sku100_stock_limit', 'title' => 'SKU100 Stock Limit Purchase', 'rules' => $purchaseLimitSKU100, 'active' => 1 ],
-                [ 'code' => 'sku100_disc_25', 'title' => 'SKU100 25% Discount', 'rules' => $priceDiscountSKU100, 'active' => 1 ],
-                [ 'code' => 'sku100_pulsaback_10', 'title' => 'SKU100 Pulsaback 25rb', 'rules' => $pulsaBack, 'active' => 1 ],
-                [ 'code' => 'sku100_promo_oct', 'title' => 'SKU100 Promo for Oct 2016', 'rules' => $beforeDate, 'active' => 1 ],
-            ]);
+        $beforeDate = [
+            ['product_id', '==', 'SKU100', 'string'],
+            ['purchase_date', '<=', '2016-10-30', 'date'],
+        ];
+        $model = new \Rimantoro\Lumenrule\Models\RulesModel;
+        $model->code = 'sku100_promo_oct';
+        $model->title = 'SKU100 Promo for Oct 2016';
+        $model->rules = $beforeDate;
+        $model->group_logic = '{0} AND {1}';
+        $model->active = 1;
+        $model->save();
+
+
     }
 }

@@ -25,6 +25,7 @@ class RulesModel extends Model
 
     protected $paramType = [ 'numeric', 'string', 'date', 'boolean' ];
     protected $operandType = [ '==', '===', '!=', '!==', '>=', '<=', '>', '<', '<>' ];
+    protected $logicOperand = [ 'NOT', 'AND', 'OR' ];
 
     /************************
      *  Relationship Methods
