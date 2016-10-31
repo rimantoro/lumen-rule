@@ -46,7 +46,7 @@ $result2 = $Rule->validate();    // This also true
 
 $humanize = $Rule->parseRuleAsString();         // will print "( \"SKU200\" == \"SKU200\" OR \"SKU200\" == \"SKU100\" ) AND 100 < 200"
 
-$rawHumanize = $Rule->parseRuleAsString(0);     // will print  "( \"product_id\" == \"SKU200\" OR \"product_id\" == \"SKU100\" ) AND purchase_qty < 200"
+$rawHumanize = $Rule->parseRuleAsString(1);     // will print  "( \"product_id\" == \"SKU200\" OR \"product_id\" == \"SKU100\" ) AND purchase_qty < 200"
 
 ```
 
