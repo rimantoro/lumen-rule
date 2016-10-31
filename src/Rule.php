@@ -18,6 +18,7 @@ class Rule {
 	protected $actualParams;
 	protected $ruleSet;
 
+	protected $completeRawStrLogic;
 	protected $completeStrLogic;
 	protected $completeLogic;
 
@@ -52,7 +53,8 @@ class Rule {
 		$boolResult = [];
 
 		// string container for decrypting rule
-		$stringRule = [];
+		$stringRawRule = [];	// paramt with value
+		$stringRule = [];		// value with value 
         
         $result = false;
         foreach ($ruleSet as $k => $rule) {
@@ -66,32 +68,38 @@ class Rule {
             	switch ($type) {
             		case 'string':
             			$stringRule[] = "\"$actualParams[$param]\" $opr \"$value\"";
+            			$stringRawRule[] = "\"$param\" $opr \"$value\"";
             			eval("\$boolResult[] = (\"$actualParams[$param]\" $opr \"$value\") ? 1 : 0;");
             			break;
             		
             		case 'numeric':
             			$stringRule[] = "$actualParams[$param] $opr $value";
+            			$stringRawRule[] = "$param $opr $value";
             			eval("\$boolResult[] = ($actualParams[$param] $opr $value) ? 1 : 0;");
             			break;
 
             		case 'date':
             			$stringRule[] = "date(\"Y-m-d H:i:s\", strtotime(\"$actualParams[$param]\")) $opr date(\"Y-m-d H:i:s\", strtotime(\"$value\"))";
+            			$stringRawRule[] = "\"$param\" $opr date(\"Y-m-d H:i:s\", strtotime(\"$value\"))";
             			eval("\$boolResult[] = (strtotime(\"$actualParams[$param]\") $opr strtotime(\"$value\")) ? 1 : 0;");
             			break;
             		
             		case 'boolean':
             			$stringRule[] = "$actualParams[$param] $opr $value";
+            			$stringRawRule[] = "$param $opr $value";
             			eval("\$boolResult[] = ($actualParams[$param] $opr $value) ? 1 : 0;");
             			break;
             		
             		default:
             			$stringRule[] = "\"$actualParams[$param]\" $opr \"$value\"";
+            			$stringRawRule[] = "\"$param\" $opr \"$value\"";
             			eval("\$boolResult[] = (\"$actualParams[$param]\" $opr \"$value\") ? 1 : 0;");
             			break;
             	}
             } else {
             	$boolResult[] = 0;
             	$stringRule[] = "FALSE";
+            	$stringRawRule[] = "FALSE";
             }
         }
 
@@ -106,6 +114,7 @@ class Rule {
         	$patterns = $patterns[0];
         	$replacements = $boolResult;
         	$strReplacements = $stringRule;
+        	$strRawReplacements = $stringRawRule;
 
         	foreach ($patterns as $k => $v) {
         		$clean = trim($v, '{');
@@ -119,12 +128,15 @@ class Rule {
         	ksort($patterns);
         	ksort($replacements);
         	ksort($strReplacements);
+        	ksort($strRawReplacements);
 
         	$this->completeLogic = str_replace($patterns, $replacements, $this->group_logic);
         	$this->completeStrLogic = str_replace($patterns, $strReplacements, $this->group_logic);
+        	$this->completeRawStrLogic = str_replace($patterns, $strRawReplacements, $this->group_logic);
         } else {
         	$this->completeLogic = implode(" AND ", $boolResult);
         	$this->completeStrLogic = implode(" AND ", $stringRule);
+        	$this->completeRawStrLogic = implode(" AND ", $strRawReplacements);
         }
 	}
 
@@ -170,11 +182,11 @@ class Rule {
     	return $result;
 	}
 
-	public function parseRuleAsString()
+	public function parseRuleAsString($raw=0)
 	{
 		$this->rebuildLogic($this->ruleSet);
 
-		return $this->completeStrLogic;
+		return $raw ? $this->completeRawStrLogic : $this->completeStrLogic;
 	}
 
 }

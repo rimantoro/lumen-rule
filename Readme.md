@@ -41,6 +41,13 @@ $Rule = new \Rimantoro\Lumenrule\Rule('promo_for_sku100_and_sku200', [
         'product_id' => 'SKU200', 'purchase_qty' => 100
     ]);
 $result2 = $Rule->validate();    // This also true
+
+// Debuging rule
+
+$humanize = $Rule->parseRuleAsString();         // will print "( \"SKU200\" == \"SKU200\" OR \"SKU200\" == \"SKU100\" ) AND 100 < 200"
+
+$rawHumanize = $Rule->parseRuleAsString(0);     // will print  "( \"product_id\" == \"SKU200\" OR \"product_id\" == \"SKU100\" ) AND purchase_qty < 200"
+
 ```
 
 ### Logic Grouping
