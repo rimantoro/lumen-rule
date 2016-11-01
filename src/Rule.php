@@ -11,11 +11,16 @@ class Rule {
 	protected $code;
 	protected $title;
 	protected $rules;
+	protected $group_logic;
 	protected $active;
 
 	protected $now;
 	protected $actualParams;
 	protected $ruleSet;
+
+	protected $completeRawStrLogic;
+	protected $completeStrLogic;
+	protected $completeLogic;
 
 	protected function getDataAndParse()
 	{
@@ -23,7 +28,7 @@ class Rule {
 			->where('active', 1)
 			->first();
 
-		if(!$rule) throw new Exception("Rule not found or inactive for code=".$this->code, 422);
+		if(!$rule) throw new Exception("Rule not found or inactive for code ".$this->code, 422);
 
 		$this->ruleSet = $rule->rules;
 
@@ -33,8 +38,106 @@ class Rule {
 		$this->title = $rule->title;
 		$this->active = $rule->active;
 		$this->rules = $this->ruleSet;
+		$this->group_logic = $rule->group_logic;
 
 		return $this->ruleSet;
+	}
+
+	protected function rebuildLogic($ruleSet)
+	{
+		if(!$ruleSet) throw new Exception("Rule is not valid", 500);
+	
+		$actualParams = $this->actualParams;
+		
+		// result container for single rule in rule set
+		$boolResult = [];
+
+		// string container for decrypting rule
+		$stringRawRule = [];	// paramt with value
+		$stringRule = [];		// value with value 
+        
+        $result = false;
+        foreach ($ruleSet as $k => $rule) {
+            $param = $rule[0];
+            $opr = $rule[1];
+            $value = $rule[2];
+            $type = strtolower($rule[3]);
+
+            if(isset($actualParams[$param])) {
+
+            	switch ($type) {
+            		case 'string':
+            			$stringRule[] = "\"$actualParams[$param]\" $opr \"$value\"";
+            			$stringRawRule[] = "\"$param\" $opr \"$value\"";
+            			eval("\$boolResult[] = (\"$actualParams[$param]\" $opr \"$value\") ? 1 : 0;");
+            			break;
+            		
+            		case 'numeric':
+            			$stringRule[] = "$actualParams[$param] $opr $value";
+            			$stringRawRule[] = "$param $opr $value";
+            			eval("\$boolResult[] = ($actualParams[$param] $opr $value) ? 1 : 0;");
+            			break;
+
+            		case 'date':
+            			$stringRule[] = "date(\"Y-m-d H:i:s\", strtotime(\"$actualParams[$param]\")) $opr date(\"Y-m-d H:i:s\", strtotime(\"$value\"))";
+            			$stringRawRule[] = "\"$param\" $opr date(\"Y-m-d H:i:s\", strtotime(\"$value\"))";
+            			eval("\$boolResult[] = (strtotime(\"$actualParams[$param]\") $opr strtotime(\"$value\")) ? 1 : 0;");
+            			break;
+            		
+            		case 'boolean':
+            			$stringRule[] = "$actualParams[$param] $opr $value";
+            			$stringRawRule[] = "$param $opr $value";
+            			eval("\$boolResult[] = ($actualParams[$param] $opr $value) ? 1 : 0;");
+            			break;
+            		
+            		default:
+            			$stringRule[] = "\"$actualParams[$param]\" $opr \"$value\"";
+            			$stringRawRule[] = "\"$param\" $opr \"$value\"";
+            			eval("\$boolResult[] = (\"$actualParams[$param]\" $opr \"$value\") ? 1 : 0;");
+            			break;
+            	}
+            } else {
+            	$boolResult[] = 0;
+            	$stringRule[] = "FALSE";
+            	$stringRawRule[] = "FALSE";
+            }
+        }
+
+        if(!empty($this->group_logic)) {
+        	// parse logic group string
+        	$patterns = [];
+        	preg_match_all("/\{[^}]*?\}/", $this->group_logic, $patterns);
+        	
+        	// return FALSE if not found (invalid logic string)
+        	if(!count($patterns[0])) throw new Exception("Invalid logic string. Logic string should include only AND, OR, NOT, (, ) and Rule index with brace. i.e: {0} AND ( {1} OR {2} )", 500);
+        	
+        	$patterns = $patterns[0];
+        	$replacements = $boolResult;
+        	$strReplacements = $stringRule;
+        	$strRawReplacements = $stringRawRule;
+
+        	foreach ($patterns as $k => $v) {
+        		$clean = trim($v, '{');
+        		$clean = trim($clean, '}');
+        		if(!isset($replacements[$clean])):
+        			// cannot find valid replacement
+        			throw new Exception("Cannot found valid rule replacement for index $clean", 500);
+        		endif;
+        	}
+
+        	ksort($patterns);
+        	ksort($replacements);
+        	ksort($strReplacements);
+        	ksort($strRawReplacements);
+
+        	$this->completeLogic = str_replace($patterns, $replacements, $this->group_logic);
+        	$this->completeStrLogic = str_replace($patterns, $strReplacements, $this->group_logic);
+        	$this->completeRawStrLogic = str_replace($patterns, $strRawReplacements, $this->group_logic);
+        } else {
+        	$this->completeLogic = implode(" AND ", $boolResult);
+        	$this->completeStrLogic = implode(" AND ", $stringRule);
+        	$this->completeRawStrLogic = implode(" AND ", $stringRawRule);
+        }
 	}
 
 	// ========================
@@ -66,74 +169,24 @@ class Rule {
 		}
 	}
 	
-	public function defaultActionCB($ruleSet)
+	protected function defaultActionCB($ruleSet)
 	{
 		return $this->result($ruleSet);
 	}
 
 	public function result($ruleSet)
 	{
-		if(!$ruleSet) throw new Exception("Rule is not valid", 500);
-		
-		$actualParams = $this->actualParams;
-		$logicVal = [];
-        $result = false;
-        foreach ($ruleSet as $k => $rule) {
-            $param = $rule[0];
-            $opr = $rule[1];
-            $value = $rule[2];
-            $type = strtolower($rule[3]);
-
-            if(isset($actualParams[$param])) {
-
-            	switch ($type) {
-            		case 'string':
-            			eval("\$logicVal[] = (\"$actualParams[$param]\" $opr \"$value\") ? 1 : 0;");
-            			break;
-            		
-            		case 'numeric':
-            			eval("\$logicVal[] = ($actualParams[$param] $opr $value) ? 1 : 0;");
-            			break;
-
-            		case 'date':
-            			eval("\$logicVal[] = (strtotime(\"$actualParams[$param]\") $opr strtotime(\"$value\")) ? 1 : 0;");
-            			break;
-            		
-            		case 'boolean':
-            			eval("\$logicVal[] = ($actualParams[$param] $opr $value) ? 1 : 0;");
-            			break;
-            		
-            		default:
-            			eval("\$logicVal[] = (\"$actualParams[$param]\" $opr \"$value\") ? 1 : 0;");
-            			break;
-            	}
-            } else {
-            	$logicVal[] = 0;
-            }
-        }
-
-        $strCompare = implode(" && ", $logicVal);
-
-        eval("\$result = $strCompare;");
-
-        return $result;
+        $this->rebuildLogic($ruleSet);
+        $logicSet = $this->completeLogic;
+        @eval("\$result = ($logicSet);");
+    	return $result;
 	}
 
-	public function parseRuleAsString()
-	{	
-		$rulesLogic = $this->ruleSet;		// $this->getRuleSet();
-		
-		if(!$rulesLogic) return null;
+	public function parseRuleAsString($raw=0)
+	{
+		$this->rebuildLogic($this->ruleSet);
 
-		$strLogic = "";
-
-		foreach ($rulesLogic as $k => $rule) {
-			$strLogic .=  sprintf("%s %s %s AND ", $rule[0], $rule[1], $rule[2]);
-		}
-
-		$strLogic = rtrim($strLogic, " AND ") . " || actual param values are " . json_encode($this->actualParams);
-
-		return $strLogic;
+		return $raw ? $this->completeRawStrLogic : $this->completeStrLogic;
 	}
 
 }
