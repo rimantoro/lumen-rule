@@ -136,7 +136,7 @@ class Rule {
         } else {
         	$this->completeLogic = implode(" AND ", $boolResult);
         	$this->completeStrLogic = implode(" AND ", $stringRule);
-        	$this->completeRawStrLogic = implode(" AND ", $strRawReplacements);
+        	$this->completeRawStrLogic = implode(" AND ", $stringRawRule);
         }
 	}
 
@@ -174,7 +174,7 @@ class Rule {
 		return $this->result($ruleSet);
 	}
 
-	protected function result($ruleSet)
+	public function result($ruleSet)
 	{
         $this->rebuildLogic($ruleSet);
         $logicSet = $this->completeLogic;
